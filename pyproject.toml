@@ -1,0 +1,15 @@
+# QA descriptor for the Polycall binding matrix (read by polycall/qa/run_qa.py).
+# This repository is NOT a Python package and is not pip-installable;
+# its native manifest is pom.xml.
+[tool.polycall.binding]
+name = "java-polycall"
+language = "Java"
+native_manifest = "pom.xml"
+registry = "npm"
+package = "@obinexusltd/java-polycall"
+abi = 1
+support = "supported"
+linux_image = "maven:3.9-eclipse-temurin-25"
+build = "mvn -B -ntp package -DskipTests"
+test = "sh /qa/build-linux-core.sh && POLYCALL_LIBRARY=/opt/polycall/lib/libpolycall.so.1 POLYCALL_CLI=/opt/polycall/bin/polycall sh scripts/test.sh"
+windows_test = "mvn -B -ntp test  (with POLYCALL_LIBRARY=<prefix>/bin/polycall.dll and POLYCALL_CLI=<prefix>/bin/polycall.exe)"

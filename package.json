@@ -1,19 +1,40 @@
 {
   "name": "@obinexusltd/java-polycall",
   "version": "1.0.0",
-  "description": "![LibPolyCall Protocol](https://img.shields.io/badge/Protocol-LibPolyCall%20v1-blue)\r ![Java Version](https://img.shields.io/badge/Java-17%2B-orange)\r ![License](https://img.shields.io/badge/License-MIT-yellow)\r ![Architecture](https://img.shields.io/badge/Architecture-Adapter%20Pattern-red)",
+  "description": "Java binding for the Polycall binding ABI v1 (Foreign Function & Memory API, JDK 22+). Source distribution of a Maven project; not a JavaScript library.",
   "main": "index.js",
-  "author": "Obinexus Ltd",
-  "license": "MIT",
+  "type": "commonjs",
+  "files": [
+    "index.js",
+    "pom.xml",
+    "src/main/",
+    "src/test/",
+    "scripts/",
+    "examples/",
+    "java-polycallrc",
+    "polycall-binding.json",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "sh scripts/test.sh",
+    "test:package": "node tests/package.test.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/obinexus/java-polycall.git"
   },
-  "keywords": [],
-  "type": "commonjs",
+  "keywords": [
+    "polycall",
+    "libpolycall",
+    "java",
+    "ffm",
+    "panama",
+    "ffi",
+    "peer-to-peer"
+  ],
+  "author": "Obinexus Ltd",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/obinexus/java-polycall/issues"
   },

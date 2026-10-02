@@ -1,0 +1,14 @@
+# java-polycallrc - read-only Java runtime overrides for Polycall
+#
+# Grammar: the shared Polycall key=value configuration grammar, exactly as
+# `polycall config validate <file>` and polycall_ffi_run_config() read it
+# (docs/CONFIGURATION_STANDARD.md in https://github.com/obinexus/polycall).
+# This binding adds no keys and no parser: Polycall.runConfig(path) passes
+# the path to polycall_ffi_run_config(path, 1), which validates it for
+# running with this build (unknown keys are errors, tls_enabled=true is
+# refused because the core has no TLS transport).
+
+log_level=info
+max_connections=1000
+network_timeout=5000
+tls_enabled=false

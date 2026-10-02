@@ -1,0 +1,17 @@
+{
+  "name": "java-polycall",
+  "package": "@obinexusltd/java-polycall",
+  "maven": "org.obinexus:java-polycall",
+  "version": "1.0.0",
+  "language": "Java",
+  "adapter": true,
+  "ffi": "java.lang.foreign (JDK 22+), no C glue",
+  "abi": 1,
+  "entry_point": "polycall_ffi_run_config",
+  "config": "java-polycallrc",
+  "core": "polycall >= 1.1.0 (binding ABI 1)",
+  "core_repository": "https://github.com/obinexus/polycall",
+  "repository": "https://github.com/obinexus/java-polycall",
+  "license": "MIT",
+  "author": "Nnamdi Michael Okpala"
+}
