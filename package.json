@@ -10,6 +10,7 @@
     "src/main/",
     "src/test/",
     "scripts/",
+    "tests/package.test.js",
     "examples/",
     "java-polycallrc",
     "polycall-binding.json",
