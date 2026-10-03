@@ -74,10 +74,24 @@ class ConfigTest {
         assertEquals(Status.E_INVALID_ARGUMENT, Polycall.runConfigStatus("", true));
     }
 
+    /**
+     * Non-ASCII directory and file name. The JVM runs in the ANSI code page
+     * on Windows, so this needs a core that opens config files by UTF-8 path
+     * (polycall 58bae1b and later); the binding passes the UTF-8 bytes intact.
+     */
     @Test
     void utf8PathIsPassedIntact() throws Exception {
-        String f = write("café-世界-polycallrc", "log_level=info\n");
+        Path sub = Files.createDirectory(dir.resolve("dír-世界"));
+        Path p = sub.resolve("café-世界-polycallrc");
+        Files.writeString(p, "log_level=info\nmax_connections=3\n");
+        String f = p.toString();
         assertDoesNotThrow(() -> Polycall.runConfig(f));
+        assertDoesNotThrow(() -> Polycall.runConfig(f, false));
+        assertTrue(Polycall.describe(f).contains("max_connections"), f);
+        // the detail comes back as UTF-8 and names the exact (missing) path
+        String missing = sub.resolve("ñó-世界-polycallrc").toString();
+        PolycallException e = Fixtures.expectStatus(Status.E_NOT_FOUND, () -> Polycall.runConfig(missing));
+        assertTrue(e.detail().contains(missing), e.detail());
     }
 
     @Test

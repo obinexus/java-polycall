@@ -87,19 +87,33 @@ POLYCALL_CLI=/opt/polycall/bin/polycall sh scripts/test.sh   # or: mvn test
 ```
 
 They cover the BINDING_ABI.md checklist: version/ABI, `run_config` (valid,
-missing, invalid, strict, TLS), `call` against `polycall start` and
-`polycall daemon start` (success, unknown operation, deadline, invalid input,
-no runtime), two nodes exchanging payloads both ways (empty, UTF-8, binary
-with NUL, 1 MiB, 1 MiB + 1), registry ownership, duplicates, auth failure,
+missing, invalid, strict, TLS, a non-ASCII directory and file name), `call`
+against `polycall start` and `polycall daemon start` (success, unknown
+operation, deadline, invalid input, no runtime), two nodes exchanging
+payloads both ways (empty, UTF-8, binary with NUL, 1 MiB, 1 MiB + 1),
+registry ownership, duplicates, auth failure,
 dead peer, receive timeout, too-small buffer, cancel/close wake-ups, double
-close / invalid handles, concurrent senders, and interop with the C CLI
+close / invalid handles, a dropped peer closed by its Cleaner, out-of-range
+`uint32_t` timeouts, concurrent senders and calls, and interop with the C CLI
 (`polycall peer serve/send/recv/health/register`). `EchoInteropTest` runs
 against another binding's echo agent when `POLYCALL_INTEROP_ECHO` names its
 command. Tests that cannot run (no CLI, no agent) are reported as skipped,
 never as passed; `scripts/test.sh` exits 77 when the toolchain is missing.
 
-`src/test/c/fake_polycall_abi2.c` is a clearly-labelled fake library used only
+Loader errors are checked in-process and, through the command line, in a
+fresh JVM (`LoaderProcessTest`: exit 8, a message naming the library, no
+crash): a missing file, a library without the binding ABI, a real 1.0 core
+when `POLYCALL_TEST_V1_0_LIBRARY` names one (libpolycall built from polycall
+v1.0.0), and an ABI-2 library when `POLYCALL_TEST_FAKE_ABI2` names one.
+`src/test/c/fake_polycall_abi2.c` is that clearly-labelled fake library
+(`scripts/test.sh` builds it when a C compiler is present); it is used only
 to prove that the loader refuses ABI 2.
+
+On Windows, run `mvn test` with `POLYCALL_LIBRARY` set to `polycall.dll`
+(MSVC build) or `libpolycall.dll` (MSYS2 UCRT64 build) and `POLYCALL_CLI` to
+the matching `polycall.exe`. A JVM runs in the ANSI code page, so non-ASCII
+configuration paths need a core that opens files by UTF-8 path (polycall
+commit 58bae1b or later); older DLLs report `POLYCALL_E_NOT_FOUND` for them.
 
 ## License
 

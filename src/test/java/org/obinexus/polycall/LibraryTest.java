@@ -97,6 +97,24 @@ class LibraryTest {
     }
 
     /**
+     * A REAL pre-ABI core: libpolycall built from polycall v1.0.0 (commit
+     * 9fa354a), which exports only the 1.0 API. POLYCALL_TEST_V1_0_LIBRARY
+     * names that build; the test is skipped (never passed) without it.
+     */
+    @Test
+    void realOneZeroCoreIsRefusedWithAClearError() {
+        String old = System.getenv("POLYCALL_TEST_V1_0_LIBRARY");
+        Assumptions.assumeTrue(old != null && !old.isBlank(),
+                "POLYCALL_TEST_V1_0_LIBRARY not set (no libpolycall 1.0.x build provided)");
+        PolycallLoadException e = assertThrows(PolycallLoadException.class, () -> NativeApi.load(old));
+        assertEquals(old, e.library());
+        assertTrue(e.reason().contains("missing symbol(s)"), e.getMessage());
+        assertTrue(e.reason().contains("polycall_ffi_abi_version"), e.getMessage());
+        assertTrue(e.reason().contains("older 1.0 core"), e.getMessage());
+        assertFalse(e.reason().contains("polycall_get_version"), "the 1.0 API symbol is present: " + e.getMessage());
+    }
+
+    /**
      * ABI mismatch: a clearly-labelled FAKE library (src/test/c/fake_polycall_abi2.c,
      * built by the test scripts) exporting every symbol with
      * polycall_ffi_abi_version() == 2. It exercises only the binding's loader.

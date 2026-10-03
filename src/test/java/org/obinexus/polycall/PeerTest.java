@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.obinexus.polycall.Fixtures.T;
 import static org.obinexus.polycall.Fixtures.TOKEN;
 import static org.obinexus.polycall.Fixtures.expectStatus;
@@ -270,6 +271,32 @@ class PeerTest {
         }
     }
 
+    private static String openAndDrop() {
+        return Peer.open("dropped", "127.0.0.1:0", TOKEN).endpoint();
+    }
+
+    /** A peer dropped without close() is closed by its Cleaner (its listener stops). */
+    @Test
+    void anUnreachablePeerIsClosedByTheCleaner() throws Exception {
+        String ep = openAndDrop();
+        alpha.ping(ep, T);
+        long end = System.nanoTime() + 30_000_000_000L;
+        PolycallException last = null;
+        while (System.nanoTime() < end) {
+            System.gc();
+            Thread.sleep(200);
+            try {
+                alpha.ping(ep, 3000);
+            } catch (PolycallException e) {
+                if (e.status() == Status.E_TRANSPORT) {
+                    return; // the listener is gone: the Cleaner closed the node
+                }
+                last = e;
+            }
+        }
+        fail("the dropped peer was never closed; last error: " + last);
+    }
+
     @Test
     void concurrentSenders() throws Exception {
         int senders = 4;
@@ -346,6 +373,12 @@ class PeerTest {
         expectStatus(Status.E_INVALID_ARGUMENT, () -> alpha.send("", "x", "m-1", T));
         expectStatus(Status.E_INVALID_ARGUMENT, () -> alpha.register("bad id!", beta.endpoint()));
         expectStatus(Status.E_INVALID_ARGUMENT, () -> alpha.recv(-1));
+        // uint32_t timeouts: values outside 0..UINT32_MAX never reach the library truncated
+        expectStatus(Status.E_INVALID_ARGUMENT, () -> alpha.recv(Peer.WAIT_FOREVER + 1));
+        expectStatus(Status.E_INVALID_ARGUMENT, () -> alpha.ping("beta", Peer.WAIT_FOREVER + 1));
+        expectStatus(Status.E_INVALID_ARGUMENT, () -> alpha.send("beta", "x", "m-t", -1));
+        expectStatus(Status.E_INVALID_ARGUMENT, () -> alpha.recv(T, -1));
+        expectStatus(Status.E_INVALID_ARGUMENT, () -> alpha.recv(T, Integer.MAX_VALUE + 1L));
         // a non-loopback listener without a token is refused
         expectStatus(Status.E_CONFIG, () -> Peer.open("exposed", "0.0.0.0:0", null));
         // the port is taken
