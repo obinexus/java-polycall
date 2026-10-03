@@ -1,13 +1,13 @@
 'use strict';
 
-// @obinexusltd/java-polycall is a source distribution of a Java (Maven)
+// java-polycall is a source distribution of a Java (Maven)
 // binding; requiring it from Node.js only locates the packaged files.
 const path = require('node:path');
 
 const fromPackageRoot = (...parts) => path.join(__dirname, ...parts);
 
 module.exports = Object.freeze({
-  packageName: '@obinexusltd/java-polycall',
+  packageName: 'java-polycall',
   language: 'Java',
   abi: 1,
   pom: fromPackageRoot('pom.xml'),

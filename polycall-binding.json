@@ -1,6 +1,6 @@
 {
   "name": "java-polycall",
-  "package": "@obinexusltd/java-polycall",
+  "package": "java-polycall",
   "maven": "org.obinexus:java-polycall",
   "version": "1.0.0",
   "language": "Java",

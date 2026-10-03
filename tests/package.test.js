@@ -9,7 +9,7 @@ const binding = require('..');
 const metadata = require('../package.json');
 const manifest = require('../polycall-binding.json');
 
-assert.equal(metadata.name, '@obinexusltd/java-polycall');
+assert.equal(metadata.name, 'java-polycall');
 assert.equal(metadata.license, 'MIT');
 assert.equal(metadata.repository.url, 'git+https://github.com/obinexus/java-polycall.git');
 assert.equal(manifest.version, metadata.version, 'polycall-binding.json version matches package.json');
