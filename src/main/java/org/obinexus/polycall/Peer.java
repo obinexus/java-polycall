@@ -3,6 +3,7 @@ package org.obinexus.polycall;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.ref.Cleaner;
+import java.lang.ref.Reference;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,7 +22,9 @@ import static java.lang.foreign.ValueLayout.JAVA_LONG;
  * {@link #recv(long)}. {@link #close()} is idempotent; the methods of a
  * closed peer pass its stale handle to the library, which reports
  * {@link Status#E_INVALID_HANDLE}. A peer that is never closed is closed by
- * a {@link Cleaner} once unreachable.</p>
+ * a {@link Cleaner} once unreachable; every method keeps the peer reachable
+ * until its native call has returned, so the Cleaner can never close a handle
+ * that is still in use.</p>
  */
 public final class Peer implements AutoCloseable {
     /** {@code UINT32_MAX}: block in {@link #recv(long)} until a message, cancel or close. */
@@ -117,15 +120,23 @@ public final class Peer implements AutoCloseable {
     /** The bound "host:port" ("" for a send-only node). */
     public String endpoint() {
         NativeApi api = Polycall.api();
-        return Polycall.text("peer_endpoint", (buf, cap, outLen) ->
-                (int) api.peerEndpoint.invokeExact(handle, buf, cap));
+        try {
+            return Polycall.text("peer_endpoint", (buf, cap, outLen) ->
+                    (int) api.peerEndpoint.invokeExact(handle, buf, cap));
+        } finally {
+            Reference.reachabilityFence(this);
+        }
     }
 
     /** This node's id. */
     public String nodeId() {
         NativeApi api = Polycall.api();
-        return Polycall.text("peer_node_id", (buf, cap, outLen) ->
-                (int) api.peerNodeId.invokeExact(handle, buf, cap));
+        try {
+            return Polycall.text("peer_node_id", (buf, cap, outLen) ->
+                    (int) api.peerNodeId.invokeExact(handle, buf, cap));
+        } finally {
+            Reference.reachabilityFence(this);
+        }
     }
 
     /** Add or replace {@code peerId -> endpoint} in THIS node's registry. */
@@ -138,6 +149,8 @@ public final class Peer implements AutoCloseable {
             Polycall.check(st, "peer_register(" + peerId + ")");
         } catch (Throwable t) {
             throw Polycall.rethrow(t);
+        } finally {
+            Reference.reachabilityFence(this);
         }
     }
 
@@ -150,21 +163,31 @@ public final class Peer implements AutoCloseable {
             Polycall.check(st, "peer_unregister(" + peerId + ")");
         } catch (Throwable t) {
             throw Polycall.rethrow(t);
+        } finally {
+            Reference.reachabilityFence(this);
         }
     }
 
     /** THIS node's registry as a JSON object {@code {"id":"host:port",...}}. */
     public String list() {
         NativeApi api = Polycall.api();
-        return Polycall.text("peer_list", (buf, cap, outLen) ->
-                (int) api.peerList.invokeExact(handle, buf, cap, outLen));
+        try {
+            return Polycall.text("peer_list", (buf, cap, outLen) ->
+                    (int) api.peerList.invokeExact(handle, buf, cap, outLen));
+        } finally {
+            Reference.reachabilityFence(this);
+        }
     }
 
     /** This node's health as JSON (node id, endpoint, peers, inbox, counters). */
     public String health() {
         NativeApi api = Polycall.api();
-        return Polycall.text("peer_health", (buf, cap, outLen) ->
-                (int) api.peerHealth.invokeExact(handle, buf, cap, outLen));
+        try {
+            return Polycall.text("peer_health", (buf, cap, outLen) ->
+                    (int) api.peerHealth.invokeExact(handle, buf, cap, outLen));
+        } finally {
+            Reference.reachabilityFence(this);
+        }
     }
 
     /**
@@ -179,6 +202,8 @@ public final class Peer implements AutoCloseable {
             Polycall.check(st, "peer_ping(" + peer + ")");
         } catch (Throwable t) {
             throw Polycall.rethrow(t);
+        } finally {
+            Reference.reachabilityFence(this);
         }
     }
 
@@ -212,6 +237,8 @@ public final class Peer implements AutoCloseable {
                     + messageId + ")");
         } catch (Throwable t) {
             throw Polycall.rethrow(t);
+        } finally {
+            Reference.reachabilityFence(this);
         }
     }
 
@@ -285,6 +312,8 @@ public final class Peer implements AutoCloseable {
             return new PeerMessage(Polycall.readString(sender), Polycall.readString(mid), data);
         } catch (Throwable t) {
             throw Polycall.rethrow(t);
+        } finally {
+            Reference.reachabilityFence(this);
         }
     }
 
@@ -307,6 +336,8 @@ public final class Peer implements AutoCloseable {
             st = (int) Polycall.api().peerCancel.invokeExact(handle);
         } catch (Throwable t) {
             throw Polycall.rethrow(t);
+        } finally {
+            Reference.reachabilityFence(this);
         }
         Polycall.check(st, "peer_cancel");
     }
