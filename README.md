@@ -15,6 +15,21 @@ C glue, no JNI library to build and no runtime dependency besides `java.base`.
 - libpolycall >= 1.1.0 (binding ABI 1), 64-bit
 - Maven 3.6.3+ to build
 
+## Maven
+
+```xml
+<dependency>
+    <groupId>org.obinexus</groupId>
+    <artifactId>java-polycall</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+The jar holds only the binding; libpolycall itself is installed separately
+(see below). [`examples/maven-demo`](examples/maven-demo) is a complete
+consumer project: it starts `polycall start`, calls its operations and
+exchanges peer messages (`mvn -q compile exec:exec`).
+
 ## Loading the library
 
 1. `POLYCALL_LIBRARY` environment variable (full path), then
@@ -114,6 +129,21 @@ On Windows, run `mvn test` with `POLYCALL_LIBRARY` set to `polycall.dll`
 the matching `polycall.exe`. A JVM runs in the ANSI code page, so non-ASCII
 configuration paths need a core that opens files by UTF-8 path (polycall
 commit 58bae1b or later); older DLLs report `POLYCALL_E_NOT_FOUND` for them.
+
+## Releasing to Maven Central
+
+Namespace `org.obinexus` on the Sonatype Central Portal. Artifacts are signed
+with gpg key `3B3B3678E55C443389403805C3B720062EB1EF48`, published to
+`keyserver.ubuntu.com` and `keys.openpgp.org`.
+
+- `mvn -P release deploy` with a Central Portal user token in
+  `~/.m2/settings.xml` (server id `central`), or
+- `JAVA_HOME=<jdk 22+> sh scripts/central-bundle.sh` (JDK and gpg only), then
+  upload `target/central-bundle.zip` at
+  https://central.sonatype.com/publishing (Publish Component).
+
+Either way the deployment stops at VALIDATED; press Publish in the portal.
+A published version can never be replaced, so bump `<version>` first.
 
 ## License
 
